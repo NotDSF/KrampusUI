@@ -1,0 +1,19 @@
+{
+  "name": "PSUTools",
+  "version": "1.0.0",
+  "description": "PSU Tools",
+  "main": "./src/index.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "dsf",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^13.1.0",
+    "electron-builder": "^22.10.5"
+  },
+  "dependencies": {
+    "ws": "^7.4.6"
+  }
+}

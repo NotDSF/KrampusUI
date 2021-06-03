@@ -1,0 +1,67 @@
+body {
+    background-color: rgb(35, 35, 35);
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+* {
+    margin: 0px;
+    padding: 0px;
+}
+
+#editor {
+    position: absolute;
+    width: 900px;
+    bottom: 0px;
+    height: 94%;
+}
+
+button {
+    width: 150px;
+    height: 30px;
+    background-color: rgb(19, 19, 19);
+    color: rgb(228, 228, 228);
+    font-family: 'Inter';
+    font-weight: 400;
+    font-size: 13px;
+    border-width: thin;
+    outline: none;
+    border: none;
+    transition: 0.2s;
+}
+
+button:hover {
+    background-color: rgb(33, 31, 31);
+}
+
+button:active {
+    opacity: 0.4;
+}
+
+#grab {
+    margin-top: 7px;
+    margin-left: 6px;
+}
+
+#dump {
+    margin-top: 7px;
+    margin-left: 1px;
+}
+
+#luraph {
+    position: absolute;
+    right: 0px;
+    margin-top: 7px;
+    margin-right: 8px;
+    width: 120px;
+    background-color: rgb(142, 88, 174);
+}
+
+#discord {
+    position: absolute;
+    right: 125px;
+    margin-top: 7px;
+    margin-right: 8px;
+    width: 120px;
+    background-color: rgb(86, 98, 246);
+}
