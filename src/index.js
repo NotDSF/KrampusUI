@@ -38,7 +38,7 @@ function constantDump(src) {
 
         if (!match) return reject("-- Unsupported obfuscator, press grab then constant dump if this is psu premium.");
 
-        src = src.replace(match[0], `${match[0]}print(Serialize(${match[1]}))`);
+        src = src.replace(match[0], `${match[0]}print(constantDump(${match[1]}))`);
         src = src.replace(/\(L_\d+_\(.*?\.\.\.\) - 1\)/g, "error()"); // Stops this distaster rip my pc https://cdn.discordapp.com/attachments/822638850940731452/850078130957451264/unknown.png
 
         writeFileSync("tempFile.lua", injectCode+src);

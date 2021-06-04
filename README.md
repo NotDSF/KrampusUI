@@ -15,14 +15,7 @@ npm start
 Grabs the original obfuscated script behind PSU premium output.
 
 ### Constant Dump
-Grabs the constants, formatted in a simple way. Each table represents a proto. Example output:
-
-```lua
-{
-	[0] = "print",
-	[1] = "Hello World"
-}
-```
+Grabs the constants.
 
 ## Showcase
 

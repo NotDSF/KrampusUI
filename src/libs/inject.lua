@@ -1,4 +1,4 @@
-local oldLoadstring = loadstring;
+local protoCount = -1;
 
 -- https://github.com/NotDSF/Lua-Serializer/
 
@@ -74,3 +74,8 @@ loadstring = function(src)
   end);
 end;
 
+local function findTable(tbl, value) for i,v in Pairs(tbl) do if v == value then return value end; end; end; 
+local function constantDump(tbl) 
+  protoCount = protoCount + 1;
+  return ("%s %s %s"):format(findTable(tbl, "checkifgay") and "Main proto" or "Proto[" .. protoCount .. "]", Serialize(tbl), #tbl > 0 and "\n" or ""); -- Bad way to check for the main script closure ik. Plus its not good for performance
+end;
