@@ -25,14 +25,24 @@ function launchWebsite(url) {
 }
 
 webSocket.onmessage = (msgData) => {
-    let { data } = msgData;
+    let { Operation, Data } = JSON.parse(msgData.data);
 
-    if (data === "Pong") return;
-
-    window.editor.setValue(data);
+    switch (Operation) {
+        case "text": return window.editor.setValue(Data);
+        case "updateCheck": {
+            if (Data) {
+                window.promptedUpdate = true;
+                if (confirm("Update available, would you like to download it?")) {
+                    webSocket.send(JSON.stringify({Operation: "updateClient"}));
+                }
+            }
+        }
+    }
 }
 
-let pingData = JSON.stringify({Operation: "ping"});
-setTimeout(() => {
-    webSocket.send(pingData);
-}, 5000);
+let cachedData = JSON.stringify({Operation: "checkUpdate"});
+setInterval(() => {
+    if (!window.promptedUpdate) {
+        webSocket.send(cachedData);
+    }
+}, 10000);

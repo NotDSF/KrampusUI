@@ -2,6 +2,8 @@ const { readFileSync, writeFileSync, unlinkSync } = require("fs");
 const { exec } = require("child_process");
 const { app, BrowserWindow } = require("electron");
 const { Beautify } = require("./libs/luamin");
+const { version } = require("../package.json");
+const http = require("https");
 const ws = require("ws");
 const injectCode = readFileSync("./src/libs/inject.lua", "utf-8");
 
@@ -50,6 +52,24 @@ function constantDump(src) {
     });
 }
 
+function checkUpdate() {
+    return new Promise((resolve) => {
+        http.get("https://raw.githubusercontent.com/NotDSF/PSUTools/main/package.json", (res) => {
+            res.setEncoding("utf-8");
+            res.on("data", (chunk) => {
+                let gitVersion = JSON.parse(chunk).version;
+                resolve(JSON.stringify({Data: version !== gitVersion, Operation: "updateCheck"}))
+            });
+        });
+    });
+}
+
+function updateClient() {
+    exec("git pull", (error, stdout, stderr) => {
+        process.exit();
+    });
+}
+
 const wsServer = new ws.Server({
     port: 8080
 });
@@ -61,17 +81,17 @@ wsServer.on("connection", async (webSocket) => {
         switch (Operation) {
             case "grabPremium": {
                 try {
-                    webSocket.send(await grabPremium(Data));
+                    webSocket.send(JSON.stringify({Operation: "text", Data: await grabPremium(Data)}));
                 } catch (er) {
-                    webSocket.send(er);
+                    webSocket.send(JSON.stringify({Operation: "text", Data: er}));
                 }
                 break;
             }
             case "constantDump": {
                 try {
-                    webSocket.send(await constantDump(Data));
+                    webSocket.send(JSON.stringify({Operation: "text", Data: await constantDump(Data)}));
                 } catch (er) {
-                    webSocket.send(er);
+                    webSocket.send(JSON.stringify({Operation: "text", Data: er}));
                 }
                 break;
             }
@@ -79,8 +99,12 @@ wsServer.on("connection", async (webSocket) => {
                 exec(`start ${Data}`);
                 break;
             }
-            case "ping": {
-                webSocket.send("Pong");
+            case "checkUpdate": {
+                webSocket.send(await checkUpdate());
+                break;
+            }
+            case "updateClient": {
+                updateClient();
                 break;
             }
         }
