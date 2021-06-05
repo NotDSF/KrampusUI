@@ -1,9 +1,8 @@
 let webSocket = new WebSocket("ws://localhost:8080");
-let editor;
 
 require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs" } });
 require(["vs/editor/editor.main"], function () {
-    editor = monaco.editor.create(document.getElementById("editor"), {
+    window.editor = monaco.editor.create(document.getElementById("editor"), {
         value: "print(\"Hello World\")",
         language: "lua",
         theme: "vs-dark",
@@ -14,11 +13,11 @@ require(["vs/editor/editor.main"], function () {
 });
 
 function grabPremium() {
-    webSocket.send(JSON.stringify({Operation: "grabPremium", Data: editor.getValue()}));
+    webSocket.send(JSON.stringify({Operation: "grabPremium", Data: window.editor.getValue()}));
 }
 
 function constantDump() {
-    webSocket.send(JSON.stringify({Operation: "constantDump", Data: editor.getValue()}));
+    webSocket.send(JSON.stringify({Operation: "constantDump", Data: window.editor.getValue()}));
 }
 
 function launchWebsite(url) {
@@ -30,7 +29,7 @@ webSocket.onmessage = (msgData) => {
 
     if (data === "Pong") return;
 
-    editor.setValue(data);
+    window.editor.setValue(data);
 }
 
 let pingData = JSON.stringify({Operation: "ping"});

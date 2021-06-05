@@ -9,59 +9,152 @@ body {
     padding: 0px;
 }
 
-#editor {
-    position: absolute;
-    width: 900px;
-    bottom: 0px;
-    height: 94%;
-}
-
 button {
-    width: 150px;
-    height: 30px;
-    background-color: rgb(19, 19, 19);
-    color: rgb(228, 228, 228);
-    font-family: 'Inter';
-    font-weight: 400;
-    font-size: 13px;
-    border-width: thin;
-    outline: none;
+    font-family: Inter;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 22px;
+    color: #E3E2E2;
+    background: none;
     border: none;
-    transition: 0.2s;
+    outline: none;
+    transition-duration: 0.3s;
 }
 
 button:hover {
-    background-color: rgb(33, 31, 31);
+    color: #C0BBBB;
 }
 
-button:active {
-    opacity: 0.4;
+#editor {
+    position: absolute;
+    right: 0;
+    width: 648px;
+    height: 900px;
 }
 
-#grab {
-    margin-top: 7px;
-    margin-left: 6px;
+#side-nav {
+    position: absolute;
+    width: 237px;
+    height: 900px;
+    left: 0px;
+    top: 0px;
+    background: #1C1C1C;
+}
+
+#icon {
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    left: 53px;
+    top: 34px;
 }
 
 #dump {
-    margin-top: 7px;
-    margin-left: 1px;
+    position: absolute;
+    width: 112px;
+    height: 18px;
+    left: 19px;
+    top: 247px;
+}
+
+p {
+    font-family: Inter;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 17px;
+    text-align: center;
+    color: #E3E2E2;
+}
+
+#Features {
+    position: absolute;
+    width: 237px;
+    height: 17px;
+    left: 0px;
+    top: 198px;
+}
+
+#logo-line {
+    position: absolute;
+    width: 197px;
+    height: 0px;
+    left: 19px;
+    top: 226px;
+}
+
+hr {
+    border: 1.5px solid #464646;
+}
+
+#grab {
+    position: absolute;
+    width: 102px;
+    height: 18px;
+    left: 19px;
+    top: 282px;
 }
 
 #luraph {
     position: absolute;
-    right: 0px;
-    margin-top: 7px;
-    margin-right: 8px;
-    width: 120px;
-    background-color: rgb(142, 88, 174);
+    width: 82px;
+    height: 18px;
+    left: 19px;
+    top: 317px;
 }
 
 #discord {
     position: absolute;
-    right: 125px;
-    margin-top: 7px;
-    margin-right: 8px;
-    width: 120px;
-    background-color: rgb(86, 98, 246);
+    width: 89px;
+    height: 18px;
+    left: 3px;
+    top: 352px;
+}
+
+#Options {
+    position: absolute;
+    width: 237px;
+    height: 17px;
+    left: 0px;
+    top: 432px;
+}
+
+#options-line {
+    position: absolute;
+    width: 197px;
+    height: 0px;
+    left: 19px;
+    top: 460px;
+}
+
+#clear {
+    position: absolute;
+    width: 85px;
+    height: 18px;
+    left: 19px;
+    top: 482px;
+}
+
+#reload {
+    position: absolute;
+    width: 134px;
+    height: 18px;
+    left: 19px;
+    top: 511px;
+}
+
+#version {
+    position: absolute;
+    width: 237px;
+    height: 26px;
+    left: 0px;
+    top: 642px;
+    font-family: Inter;
+    font-style: normal;
+    font-weight: 200;
+    font-size: 12px;
+    line-height: 15px;
+    text-align: center;
+    color: #E3E2E2;
 }

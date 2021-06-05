@@ -1,6 +1,6 @@
 const { readFileSync, writeFileSync, unlinkSync } = require("fs");
 const { exec } = require("child_process");
-const { app, BrowserWindow, Notification } = require("electron");
+const { app, BrowserWindow } = require("electron");
 const { Beautify } = require("./libs/luamin");
 const ws = require("ws");
 const injectCode = readFileSync("./src/libs/inject.lua", "utf-8");
@@ -34,17 +34,17 @@ function constantDump(src) {
             RenameVariables: true
         });
 
-        let match = (/else\n.*?(L_\d+_)\[.*?\] = nil\n.*?end;\n.*?end;/g).exec(src);
+        let constantTable = (/else\n.*?(L_\d+_)\[.*?\] = nil\n.*?end;\n.*?end;/).exec(src);
 
-        if (!match) return reject("-- Unsupported obfuscator, press grab then constant dump if this is psu premium.");
+        if (!constantTable) return reject("-- Unsupported obfuscator, press grab then constant dump if this is psu premium.");
 
-        src = src.replace(match[0], `${match[0]}print(constantDump(${match[1]}))`);
-        src = src.replace(/\(L_\d+_\(.*?\.\.\.\) - 1\)/g, "error()"); // Stops this distaster rip my pc https://cdn.discordapp.com/attachments/822638850940731452/850078130957451264/unknown.png
+        src = src.replace(constantTable[0], `${constantTable[0]}print(constantDump(${constantTable[1]}))`);
+        src = src.replace(/\(.*?\.\.\.\) - 1\)/, "error()"); // Stops this distaster rip my pc https://cdn.discordapp.com/attachments/822638850940731452/850078130957451264/unknown.png
 
         writeFileSync("tempFile.lua", injectCode+src);
 
         exec("lua tempFile.lua", (error, stdout, stderr) => {
-            resolve(`--[[\nDumped using PSU Tools\n\nEach constant table/pool represents a proto, the one with the fake constants is the main script proto since PSU only adds fake constants to the main proto. (lol)\n]]\n\n`+stdout);
+            resolve(`--[[\n\tDumped using PSU Tools https://github.com/NotDSF/PSUTools\n\n\tEach constant table/pool represents a proto, the one with the fake constants is the main script proto since PSU only adds fake constants to the main proto. (lol)\n]]\n\n`+stdout);
             unlinkSync("tempFile.lua");
         });
     });
@@ -90,7 +90,7 @@ wsServer.on("connection", async (webSocket) => {
 app.on("ready", () => {
     const electronWindow = new BrowserWindow({
         width: 900,
-        height: 900,
+        height: 950,
         icon: "./src/app/icon.png"
     });
 

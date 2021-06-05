@@ -4,14 +4,24 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
     <title>PSU Tools</title>
 </head>
 <body>
-    <button id="grab" onclick="grabPremium()">Grab Premium</button>
-    <button id="dump" onclick="constantDump()">Constant Dump</button>
-    <button id="luraph" onclick="launchWebsite('https://lura.ph/')">Buy Luraph</button>
-    <button id="discord" onclick="launchWebsite('https://discord.gg/v4gSvFC6rH')">Discord</button>
+    <div id="side-nav">
+        <img src="./icon.png" id="icon" onclick="alert('Perth loves boys')">
+        <hr id="logo-line">
+        <p id="Features">Features</p>
+        <button id="grab" onclick="grabPremium()">Grab Premium</button>
+        <button id="dump" onclick="constantDump()">Constant Dump</button>
+        <button id="luraph" onclick="launchWebsite('https://lura.ph/')">Buy Luraph</button>
+        <button id="discord" onclick="launchWebsite('https://discord.gg/v4gSvFC6rH')">Discord</button>
+        <p id="Options">Options</p>
+        <hr id="options-line">
+        <button id="clear" onclick="window.editor.setValue('')">Clear Editor</button>
+        <button id="reload" onclick="location.reload()">Reload Application</button>
+        <p id="version">Version 1.0.1</p>
+    </div>
     <div id="editor"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/loader.min.js"></script>
