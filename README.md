@@ -19,4 +19,4 @@ Grabs the constants.
 
 ## Showcase
 
-![UI](https://cdn.discordapp.com/attachments/814087341710376990/850137189173690408/unknown.png)
+![UI](https://cdn.discordapp.com/attachments/847558134696378431/850793096584495104/electron_k59IzHMgSZ.png)
