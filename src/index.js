@@ -54,8 +54,6 @@ const wsServer = new ws.Server({
     port: 8080
 });
 
-console.log("test"); // ignore
-
 wsServer.on("connection", async (webSocket) => {
     webSocket.on("message", async (message) => {
         let { Operation, Data } = JSON.parse(message);
