@@ -1,3 +1,5 @@
+/* Very scuffed because pasted from figma css generation */
+
 body {
     background-color: rgb(35, 35, 35);
     overflow-x: hidden;
@@ -11,9 +13,8 @@ body {
 
 button {
     font-family: Inter;
-    font-style: normal;
     font-weight: 500;
-    font-size: 15px;
+    font-size: 14.5px;
     line-height: 22px;
     color: #E3E2E2;
     background: none;

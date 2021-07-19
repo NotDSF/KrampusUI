@@ -28,7 +28,8 @@ webSocket.onmessage = (msgData) => {
     let { Operation, Data } = JSON.parse(msgData.data);
 
     switch (Operation) {
-        case "text": return window.editor.setValue(Data);
+        case "text": 
+            return window.editor.setValue(Data);
         case "updateCheck": {
             if (Data) {
                 window.promptedUpdate = true;
@@ -40,9 +41,11 @@ webSocket.onmessage = (msgData) => {
     }
 }
 
+/*
 let cachedData = JSON.stringify({Operation: "checkUpdate"});
 setInterval(() => {
     if (!window.promptedUpdate) {
-        webSocket.send(cachedData);
+       webSocket.send(cachedData);
     }
 }, 10000);
+*/

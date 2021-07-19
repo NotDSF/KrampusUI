@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSU Tools</title>
+    <style>*{font-family:Arial,Helvetica,sans-serif}p{font-size:20px}a{color:#00f}a:hover{opacity:80%;cursor:pointer}</style>
+</head>
+<body>
+    <h1 style="font-weight: 500;">Error</h1>
+    <p>Lua is not installed, install lua <a onclick="openLua()">here</a></p>
+    <script>
+        let webSocket = new WebSocket("ws://localhost:8080");
+
+        function openLua() {
+            webSocket.send(JSON.stringify({Operation: "launchWebsite", Data: "https://sourceforge.net/projects/luabinaries/files/5.1.4/Tools%20Executables/"}));
+        }
+    </script>
+</body>
+</html>
