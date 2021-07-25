@@ -113,7 +113,7 @@ wsServer.on("connection", async (webSocket) => {
     });
 });
 
-app.on("ready", async () => {
+app.on("ready", () => {
     const electronWindow = new BrowserWindow({
         width: 900,
         height: 950,
