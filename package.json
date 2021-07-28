@@ -1,7 +1,8 @@
 {
   "name": "psu-tools",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./src/index.js",
+  "bin": "./src/index.js",
   "scripts": {
     "start": "electron ./src/index.js"
   },
@@ -14,6 +15,7 @@
     "express": "^4.17.1",
     "lua.vm.js": "^0.0.1",
     "open": "^8.2.1",
+    "pkg": "^5.3.1",
     "superagent": "^6.1.0",
     "ws": "^7.5.3"
   }
