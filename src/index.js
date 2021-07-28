@@ -1,130 +1,132 @@
-const { readFileSync, writeFileSync, unlinkSync } = require("fs");
-const { exec } = require("child_process");
-const { app, BrowserWindow } = require("electron");
-const { Beautify } = require("./libs/luamin");
-const ws = require("ws");
-const injectCode = readFileSync("./src/libs/inject.lua", "utf-8");
+const electron = require('electron');
+const discord  = require('./modules/discord');
+const express  = require('express');
+const luamin   = require('./modules/luamin');
+const open     = require('open');
+const path     = require('path');
+const lua      = require('./lua');
+const psu      = require('./modules/psu');
+const fs       = require('fs');
+const ws       = require('ws');
 
-function checkLua() {
-    return new Promise((resolve, reject) => {
-        exec("lua -v", (error, stdout, stderr) => {
-            if (error) return reject();
+const http = express();
+http.use(express.static(path.join(__dirname, 'dist')));
+http.listen(42773);
 
-            resolve();
-        });
-    });
+let window;
+function createWindow() {
+    window = new electron.BrowserWindow({
+        width: 700,
+        height: 550,
+        frame: false,
+        minHeight: 450,
+        minWidth: 500,
+    })
+
+    window.loadURL('http://localhost:42773');
+    window.setMenu(null);
+
+    // window.webContents.openDevTools({mode: 'undocked'});
 }
 
-function removeCompoundOperators(src) {
-    for (let match of src.matchAll(/(?<leftHand>\w)\+=/g)) { // Removes "platform lock" compound assignment operators
-        let leftHand = match.groups.leftHand;
-        src = src.replace(match[0], `${leftHand}=${leftHand}+`);
-    }
-    return src;
-}
+const app = electron.app;
 
-function grabPremium(src) {
-    return new Promise((resolve, reject) => {
-        src = removeCompoundOperators(src);
+app.whenReady().then(createWindow);
 
-        writeFileSync("tempFile.lua", injectCode+src);
+const server = new ws.Server({
+    port: 42772
+})
 
-        exec("lua tempFile.lua", (error, stdout, stderr) => {
-            if (stderr) reject(stderr);
+server.on('connection', socket => {
+    const vm = new lua.luaVM();
 
-            resolve(removeCompoundOperators(stdout));
-            unlinkSync("tempFile.lua");
-        });
-    });
-}
+    vm.on('error', (message) => {
+        socket.send(JSON.stringify({
+            op: 'error',
+            data: {message}
+        }))
+    })
+    vm.on('syntax', (message) => {
+        socket.send(JSON.stringify({
+            op: 'syntax',
+            data: {message}
+        }))
+    })
+    socket.on('message', async message => {
+        let output;
+        const { op, data } = JSON.parse(message);
 
-function constantDump(src) {
-    return new Promise((resolve, reject) => {
-        src = Beautify(removeCompoundOperators(src), {
-            RenameVariables: true
-        });
+        switch (op) {
+            case 'close':
+                app.quit();
+                break
+            
+            case 'max':
+                window.maximize();
+                break
 
-        let constantTable = (/else\n.*?(L_\d+_)\[.*?\] = nil\n.*?end;\n.*?end;/).exec(src);
+            case 'min':
+                window.minimize();
+                break
 
-        if (!constantTable) return reject("-- Unsupported obfuscator, press grab then constant dump if this is psu premium.");
+            case 'restore':
+                window.restore();
+                break
 
-        src = src.replace(constantTable[0], `${constantTable[0]}print(constantDump(${constantTable[1]}))`)
-            .replace(/\(.*?\.\.\.\) - 1\)/, "error()"); // https://cdn.discordapp.com/attachments/822638850940731452/850078130957451264/unknown.png
+            case 'openFile':
+                const files = await electron.dialog.showOpenDialogSync(window, {properties: ['openFile']});
+                if (!files) return;
 
-        writeFileSync("tempFile.lua", injectCode + src);
+                const content = fs.readFileSync(files[0], 'utf-8');
+                socket.send(JSON.stringify({
+                    op: 'setEditor',
+                    data: {value: content}
+                }))
+                break
 
-        exec("lua tempFile.lua", (error, stdout, stderr) => {
-            resolve(stdout);
-            unlinkSync("tempFile.lua");
-        });
-    });
-}
+            case 'grabPremium':
+                output = await psu.grabPremium(vm, data.source);
 
-/*
-function checkUpdate() {
-    return new Promise((resolve) => {
-        http.get("https://raw.githubusercontent.com/NotDSF/PSUTools/main/package.json", (res) => {
-            res.setEncoding("utf-8");
-            res.on("data", (chunk) => {
-                let gitVersion = JSON.parse(chunk).version;
-                resolve(JSON.stringify({Data: version !== gitVersion, Operation: "updateCheck"}))
-            });
-        });
-    });
-}
+                socket.send(JSON.stringify({
+                    op: 'setEditor',
+                    data: {value: output}
+                }))
+                break
 
-function updateClient() {
-    exec("git pull", (error, stdout, stderr) => {
-        process.exit();
-    });
-}
-*/
+            case 'constantDump':
+                output = await psu.constantDump(vm, data.source);
 
-const wsServer = new ws.Server({
-    port: 8080
-});
+                socket.send(JSON.stringify({
+                    op: 'setEditor',
+                    data: {value: output}
+                }))
+                break
 
-wsServer.on("connection", async (webSocket) => {
-    webSocket.on("message", async (message) => {
-        let { Operation, Data } = JSON.parse(message);
-        
-        switch (Operation) {
-            case "grabPremium": {
-                try {
-                    webSocket.send(JSON.stringify({Operation: "text", Data: await grabPremium(Data)}));
-                } catch (er) {
-                    webSocket.send(JSON.stringify({Operation: "text", Data: er}));
-                }
-                break;
-            }
-            case "constantDump": {
-                try {
-                    webSocket.send(JSON.stringify({Operation: "text", Data: await constantDump(Data)}));
-                } catch (er) {
-                    webSocket.send(JSON.stringify({Operation: "text", Data: er}));
-                }
-                break;
-            }
-            case "launchWebsite": {
-                exec(`start ${Data}`);
-                break;
-            }
+            case 'joinDiscord':
+                discord.join('DEzFrPu6pY');
+                break
+
+            case 'buyLuraph':
+                open('https://lura.ph/');
+                break
+
+            case 'beautify':
+                output = await luamin.Beautify(data.source, data.options);
+
+                socket.send(JSON.stringify({
+                    op: 'setEditor',
+                    data: {value: output}
+                }))
+                break
+
+            case 'minify':
+                output = await luamin.Minify(data.source, data.options);
+
+                socket.send(JSON.stringify({
+                    op: 'setEditor',
+                    data: {value: output}
+                }))
+                break
         }
-    });
-});
-
-app.on("ready", () => {
-    const electronWindow = new BrowserWindow({
-        width: 900,
-        height: 950,
-        icon: "./src/app/icon.png"
-    });
-
-    electronWindow.setResizable(false);
-    electronWindow.setMenuBarVisibility(false);
-    electronWindow.loadFile("./src/app/index.html");
-
-    checkLua().catch(() => electronWindow.loadFile("./src/app/error.html"));
-});
-
-app.on("window-all-closed", () => app.quit());
+    })
+})

@@ -1,0 +1,235 @@
+h1 { font-family: Consolas, monaco, monospace; font-size: 24px; font-style: normal; font-variant: normal; font-weight: 700; line-height: 26.4px; } h3 { font-family: Consolas, monaco, monospace; font-size: 14px; font-style: normal; font-variant: normal; font-weight: 700; line-height: 15.4px; } p { font-family: Consolas, monaco, monospace; font-size: 14px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 20px; } blockquote { font-family: Consolas, monaco, monospace; font-size: 21px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 30px; } pre { font-family: Consolas, monaco, monospace; font-size: 13px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 18.5714px; }
+body, html, #root {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+}
+
+#wrapper {
+	background-color: #16171A;
+	width: 100%;
+	height: 100%;
+	position: absolute;
+}
+
+#title {
+	height: 30px;
+	width: 100%;
+	background-color: #202125;
+}
+
+#title-text {
+	width: 100%;
+	height: 30px;
+	position: absolute;
+	text-align: center;
+	line-height: 30px;
+	vertical-align: middle;
+	margin: 0;
+	user-select: none;
+	color: #BBBBBB;
+}
+
+#title-right, #title-left {
+	width: 50%;
+	height: 100%;
+}
+
+#title-right {
+	float: right;
+}
+
+#title-left {
+	display: flex;
+	float: left
+}
+
+#icon-wrapper {
+	width: 30px;
+	height: 100%;
+}
+
+#icon {
+	width: 20px;
+	height: 20px;
+	margin-top: 5px;
+	margin-left: 5px;
+}
+
+#navigation-wrapper {
+	text-align: center;
+	width: calc(100% - 33px);
+	height: 100%;
+	display: flex;
+}
+
+.button-left {
+	text-align: center;
+	background-color: #202125;
+	border: none;
+	position: absolute;
+	color: #BBBBBB;
+	display: inline-block;
+	padding: 0;
+}
+
+#file {
+	width: 35px;
+	height: 30px;
+}
+
+#tools {
+	margin-left: 35px;
+	width: 45px;
+	height: 30px;
+}
+
+#beautify {
+	margin-left: 80px;
+	width: 55px;
+	height: 30px;
+}
+
+#file:hover, #tools:hover, #beautify:hover {
+	background-color: #33353C;
+}
+
+#main {
+	width: 100%;
+	height: calc(100% - 30px);
+	overflow-y: hidden;
+}
+#tabs {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+}
+
+#file-tab {
+	z-index: 5;
+	position: absolute;
+	width: 250px;
+	height: 51px;
+	left: 30px;
+	top: 30px;
+	visibility: hidden;
+	background-color: #232428;
+}
+
+#tools-tab {
+	z-index: 5;
+	position: absolute;
+	width: 250px;
+	height: 107px;
+	left: 65px;
+	top: 30px;
+	visibility: hidden;
+	background-color: #232428;
+}
+#beautify-tab {
+	z-index: 5;
+	position: absolute;
+	width: 250px;
+	height: 51px;
+	left: 110px;
+	top: 30px;
+	visibility: hidden;
+	background-color: #232428;
+}
+
+.tab-entry {
+	width: 100%;
+	background: none;
+	border: none;
+}
+
+.tab-entry p {
+	background: none;
+	border: none;
+	padding-bottom: 6px;
+	padding-top: 6px;
+	margin: 0;
+	color: #BBBBBB;
+	line-height: 10px;
+	vertical-align: middle;
+	font-size: 13px
+}
+
+.tab-entry .tab-title {
+	float: left;
+	margin-left: 15px
+}
+.tab-entry .tab-key {
+	float: right;
+	margin-right: 40px;
+	width: 10%;
+}
+
+.tab-entry:hover {
+	background-color: #1e1f23
+}
+
+#button-wrapper {
+	width: 105px;
+	height: 100%;
+	display: flex;
+	float: right;
+}
+
+#close, #min, #max {
+	width: 35px;
+	height: 30px;
+	background: none;
+	border: none;
+	z-index: 2
+}
+
+#min img, #close img, #max img {
+	display: flex;
+	margin: auto;
+}
+
+#min:hover, #max:hover {
+	background-color: #33353C
+}
+
+#close:hover {
+	background-color: #f13f32;
+}
+
+#drag {
+	width: calc(100% - 270px);
+	left: 165px;
+	top: 0;
+	height: 30px;
+	position: absolute;
+	-webkit-app-region: drag;
+}
+.monaco-editor, .monaco-editor-background, .monaco-editor .inputarea.ime-input, .margin, .minimap {
+	background-color: #16171A !important
+}
+
+#drop-region {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.rs-modal-content {
+	background-color: #202125 !important;
+}
+
+.rs-checkbox-checker label, .rs-modal-title {
+	font-family: Consolas, monaco, monospace; 
+	user-select: none;
+}
+
+.rs-checkbox-checker label {
+	color: #BBBBBB;
+}
+
+.rs-modal-backdrop.fade {
+	background: #0000009c !important;
+}

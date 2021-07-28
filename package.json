@@ -1,16 +1,20 @@
 {
-  "name": "PSUTools",
-  "version": "1.0.2",
-  "description": "PSU Tools",
-  "main": "./src/index.js",
+  "name": "psu-tools",
+  "version": "1.0.0",
+  "main": "index.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron ./src/index.js"
   },
   "keywords": [],
-  "author": "dsf",
+  "author": "",
   "license": "ISC",
+  "description": "",
   "dependencies": {
-    "electron": "^13.1.0",
-    "ws": "^7.4.6"
+    "electron": "^13.1.7",
+    "express": "^4.17.1",
+    "lua.vm.js": "^0.0.1",
+    "open": "^8.2.1",
+    "superagent": "^6.1.0",
+    "ws": "^7.5.3"
   }
 }
