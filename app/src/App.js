@@ -1,6 +1,6 @@
 import React from 'react';
 import MonacoEditor from 'react-monaco-editor';
-import { Alert, Modal, Checkbox, Button } from 'rsuite';
+import { Alert } from 'rsuite';
 
 import './App.css';
 import 'rsuite/dist/styles/rsuite-dark.css';
@@ -10,6 +10,10 @@ import closeIcon from '../public/close.png';
 import maxIcon from '../public/max.png';
 import minIcon from '../public/min.png';
 import Icon from '../public/icon.png';
+import Execute from "../public/play.png";
+
+let INJECTED = false;
+let CONNECTED = false;
 
 class App extends React.Component {
 	constructor(props) {
@@ -30,11 +34,25 @@ class App extends React.Component {
 					break
 				
 				case 'error': 
-					Alert.error(data.message);
+					Alert.error(data.message, 5000);
 					break
+				case 'success':
+					Alert.success(data.message, 5000);
+					break
+				case 'connected':
+					Alert.success("Connected to RO-EXEC servers", 5000);
+					CONNECTED = true;
+					break
+				case 'injected':
+					if (data.value && !INJECTED) {
+						Alert.success("RO-EXEC was injected successfully", 5000);
+					}
 
-				case 'syntax':
-					Alert.warning(data.message);
+					if (!data.value && INJECTED) {
+						Alert.warning("RO-EXEC was uninjected", 5000);
+					}
+
+					INJECTED = data.value;
 					break
 			}
 		})
@@ -42,33 +60,26 @@ class App extends React.Component {
 		window.socket = socket;
 
 		this.onEditorChanged = this.onEditorChanged.bind(this);
-		this.updateBeautify  = this.updateBeautify.bind(this);
-		this.constantDump    = this.constantDump.bind(this);
-		this.updateMinify    = this.updateMinify.bind(this);
 		this.handleClick     = this.handleClick.bind(this);
 		this.clearEditor     = this.clearEditor.bind(this);
-		this.grabPremium     = this.grabPremium.bind(this);
 		this.handleDrop      = this.handleDrop.bind(this);
 		this.minimize        = this.minimize.bind(this);
 		this.maximize        = this.maximize.bind(this);
-		this.beautify        = this.beautify.bind(this);
 		this.openFile        = this.openFile.bind(this);
 		this.openTab         = this.openTab.bind(this);
 		this.onHover         = this.onHover.bind(this);
-		this.minify          = this.minify.bind(this);
 		this.close           = this.close.bind(this);
 		this.send            = this.send.bind(this);
-
+		this.openDirectory   = this.openDirectory.bind(this);
+		this.inject 		 = this.inject.bind(this);
+		this.execute		 = this.execute.bind(this)
 
 		this.state = {
 			maximized: false,
 			refs: {
 				files: React.createRef(),
-				tools: React.createRef(),
-				beautify: React.createRef(),	
+				config: React.createRef(),
 			},
-			beautifyProps: {},
-			minifyProps: {},
 			value: `print("Hello World!")`
 		}
 	}
@@ -101,7 +112,8 @@ class App extends React.Component {
 	openTab(tab) {
 		for (let tabName in this.state.tabs) {
 			let entry = this.state.tabs[tabName];
-			
+			if (!entry) continue;
+
 			entry.style.visibility = tabName == tab ? 'visible' : 'hidden';
 
 			if (tabName == tab) {
@@ -148,8 +160,7 @@ class App extends React.Component {
 		this.setState({
 			tabs: {
 				files: document.getElementById('file-tab'),
-				tools: document.getElementById('tools-tab'),
-				beautify: document.getElementById('beautify-tab')
+				config: document.getElementById('config-tab')
 			}
 		})
 
@@ -160,6 +171,12 @@ class App extends React.Component {
 		this.send('openFile', {});
 	}
 
+	openDirectory() {
+		if (CONNECTED) return Alert.warning("RO-EXEC already configured");
+		if (INJECTED) return Alert.warning("RO-EXEC is already injected!");
+		this.send('openDirectory', {});
+	}
+
 	clearEditor() {
 		this.setState({value: ''});
 		if (this.state.openTab) {
@@ -167,76 +184,19 @@ class App extends React.Component {
 		}
 	}
 
-	grabPremium() {
-		this.send('grabPremium', {source: this.state.value});
+	inject() {
+		if (INJECTED) return Alert.warning("RO-EXEC is already injected!");
+		this.send('inject', {})
+	}
+	
+	execute() {
+		if (!INJECTED) return Alert.error("You need to inject RO-EXEC!");
+		this.send('execute', { source: this.state.value })
 	}
 
-	constantDump() {
-		this.send('constantDump', {source: this.state.value});
-	}
-
-	updateBeautify(index, value) {
-		let props = this.state.beautifyProps;
-		props[index] = value;
-
-		this.setState({
-			beautifyProps: props
-		})
-	}
-
-	beautify() {
-		this.send('beautify', {
-			options: this.state.beautifyProps,
-			source: this.state.value
-		})
-	}
-
-	updateMinify(index, value) {
-		let props = this.state.minifyProps;
-		props[index] = value;
-
-		this.setState({
-			minifyProps: props
-		})
-	}
-
-	minify() {
-		this.send('minify', {
-			options: this.state.minifyProps,
-			source: this.state.value
-		})
-	}
 	render() {
 		return (
 			<div id='wrapper'>
-				<Modal size='xs'show={this.state.showBeautify} onHide={() => this.setState({showBeautify: false})}>
-					<Modal.Header>
-						<Modal.Title>Beautify</Modal.Title>
-					</Modal.Header>
-					<Modal.Body>
-						<Checkbox onChange={(value, checked) => this.updateBeautify('RenameVariables', checked)}>Rename Variables</Checkbox>
-						<Checkbox onChange={(value, checked) => this.updateBeautify('RenameGlobals', checked)}>Rename Globals</Checkbox>
-						<Checkbox onChange={(value, checked) => this.updateBeautify('SolveMath', checked)}>Solve Math</Checkbox>
-					</Modal.Body>
-					<Modal.Footer>
-						<Button onClick={() => {}} appearance='primary' onClick={() => this.beautify()}>Beautify</Button>
-						<Button onClick={() => this.setState({showBeautify: false})} appearance='subtle'>Cancel</Button>
-					</Modal.Footer>
-				</Modal>
-				<Modal size='xs'show={this.state.showMinify} onHide={() => this.setState({showMinify: false})}>
-					<Modal.Header>
-						<Modal.Title>Minify</Modal.Title>
-					</Modal.Header>
-					<Modal.Body>
-						<Checkbox onChange={(value, checked) => this.updateMinify('RenameVariables', checked)}>Rename Variables</Checkbox>
-						<Checkbox onChange={(value, checked) => this.updateMinify('RenameGlobals', checked)}>Rename Globals</Checkbox>
-						<Checkbox onChange={(value, checked) => this.updateMinify('SolveMath', checked)}>Solve Math</Checkbox>
-					</Modal.Body>
-					<Modal.Footer>
-						<Button onClick={() => {}} appearance='primary' onClick={() => this.minify()}>Minify</Button>
-						<Button onClick={() => this.setState({showMinify: false})} appearance='subtle'>Cancel</Button>
-					</Modal.Footer>
-				</Modal>
 				<div id='tabs'>
 					<div id='file-tab' ref={this.state.refs.files}>
 						<button class='tab-entry' onClick={this.openFile}>
@@ -246,53 +206,28 @@ class App extends React.Component {
 							<p class='tab-title'>Clear Editor</p>
 						</button>
 					</div>
-					<div id='tools-tab' ref={this.state.refs.tools}>
-						<button class='tab-entry' onClick={this.constantDump}>
-							<p class='tab-title'>Dump Constants</p>
-						</button>
-						<button class='tab-entry' onClick={this.grabPremium}>
-							<p class='tab-title'>Grab Premium Output</p>
-						</button>
-						<button class='tab-entry' onClick={() => {
-							this.send('joinDiscord');
-							if (this.state.openTab) {
-								this.openTab(null);
-							}
-						}}>
-							<p class='tab-title'>Join Discord</p>
-						</button>
-						<button class='tab-entry' onClick={() => {
-							this.send('buyLuraph');
-							if (this.state.openTab) {
-								this.openTab(null);
-							}
-						}}>
-							<p class='tab-title'>Purchase Luraph</p>
-						</button>
-					</div>
-					<div id='beautify-tab' ref={this.state.refs.beautify}>
-						<button class='tab-entry' onClick={() => this.setState({showBeautify: true})}>
-							<p class='tab-title'>Beautify</p>
-						</button>
-						<button class='tab-entry'>
-							<p class='tab-title' onClick={() => this.setState({showMinify: true})}>Minify</p>
+					<div id='config-tab' ref={this.state.refs.config}>
+						<button class='tab-entry' onClick={this.openDirectory}>
+							<p class='tab-title'>Choose installation path</p>
 						</button>
 					</div>
 				</div>
 				<div id='title'>
-					<p id='title-text'>PSU Tools - v2.0</p>
+					<p id='title-text'>loader.live</p>
+
 					<div id='title-left'>
 						<div id='icon-wrapper'>
 							<img id='icon' src={Icon} />
 						</div>
 						<div id='navigation-wrapper'>
 							<button id='file' class='button-left' onMouseOver={() => this.onHover('files')} onClick={() => this.openTab('files')}>File</button>
-							<button id='tools' class='button-left' onMouseOver={() => this.onHover('tools')} onClick={() => this.openTab('tools')}>Tools</button>
-							<button id='beautify' class='button-left' onMouseOver={() => this.onHover('beautify')} onClick={() => this.openTab('beautify')}>Luamin</button>
+							<button id='inject' class='button-left' onMouseOver={() => this.onHover('inject')} onClick={() => this.inject()}>Inject</button>
+							<button id='config' class='button-left' onMouseOver={() => this.onHover('config')} onClick={() => this.openTab('config')}>Configuation</button>
 						</div>
 					</div>
 					<div id='title-right'>
 						<div id='button-wrapper'>
+							<button id='min' onClick={this.execute}><img id ='icon' src={Execute}/></button>
 							<button id='min' onClick={this.minimize}><img id ='min-png' src={minIcon}/></button>
 							<button id='max' onClick={this.maximize}><img id='max-png' src={maxIcon}/></button>
 							<button id='close' onClick={this.close}><img id='close-png' src={closeIcon}/></button>

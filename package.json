@@ -17,6 +17,16 @@
     "open": "^8.2.1",
     "pkg": "^5.3.1",
     "superagent": "^6.1.0",
+    "websocket": "^1.0.34",
     "ws": "^7.5.3"
+  },
+  "devDependencies": {
+    "webpack-cli": "^5.1.4"
+  },
+  "build": {
+    "files": ["./src/*"],
+    "win": {
+      "requestedExecutionLevel": "requireAdministrator"
+    }
   }
 }

@@ -1,27 +1,12 @@
-# PSUTools
-
-## Requirements
-* [Node v14.15.4](https://nodejs.org/en/)
+# KrampusUI
+shitty psu tools reskin from bork quickly rushed to support loader.live websockets (it works so what)
+> :warning: Inject doesn't work unless you somehow run the node application as admin
 
 ## Usage & Installation
+- `npm i`
+- `npm start`
 
-### Installation
-```bash
-npm i
-```
-
-### Usage
-```bash
-npm start
-```
-
-## Features
-
-### Grab Premium
-Grabs the obfuscated script behind premium output. This bypasses their low attempt at security.
-
-### Constant Dump
-Grabs the constant values.
-
-## Alert
-*Not affiliated with psu.dev*
+## App setup
+> :warning: This will attempt to replicate a connection to wss://loader.live using your credentials                              
+![](https://i.imgur.com/UJdxDmo.png)                     
+ur pretty much good after thats complete

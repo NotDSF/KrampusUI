@@ -65,11 +65,9 @@ module.exports = (_env, argv) => {
                 filename: 'assets/css/[name].[contenthash:8].css',
                 chunkFilename: 'assets/css/[name].[contenthash:8].chunk.css'
             }),
-            new webpack.DefinePlugin({
-                "process.env.NODE_ENV": JSON.stringify(
-                    isProduction ? 'production' : 'development'
-                )
-            }),
+            new webpack.ProvidePlugin({
+                process: 'process/browser',
+              }),
             new html({
                 template: path.resolve(__dirname, 'public/index.html'),
                 inect: true

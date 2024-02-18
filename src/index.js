@@ -1,19 +1,25 @@
 const electron = require('electron');
-const discord  = require('./modules/discord');
 const express  = require('express');
-const luamin   = require('./modules/luamin');
-const open     = require('open');
 const path     = require('path');
-const lua      = require('./lua');
-const psu      = require('./modules/psu');
 const fs       = require('fs');
 const ws       = require('ws');
+const open     = require('open');
+const { execFile } = require("child_process");
+
+const WebSocketClient = require("websocket").client;
+const loaderClient = new WebSocketClient();
 
 const http = express();
 http.use(express.static(path.join(__dirname, 'dist')));
 http.listen(42773);
 
 let window;
+let INSTALLATION;
+let INJECTED;
+let LOADER_CONNECTION
+let APP_SOCKET;
+let LOADER_COOKIES;
+
 function createWindow() {
     window = new electron.BrowserWindow({
         width: 700,
@@ -25,35 +31,36 @@ function createWindow() {
 
     window.loadURL('http://localhost:42773');
     window.setMenu(null);
+}
 
-    // window.webContents.openDevTools({mode: 'undocked'});
+async function GetCookies() {
+    window = new electron.BrowserWindow({
+        width: 700,
+        height: 550,
+        frame: false,
+        minHeight: 450,
+        minWidth: 500,
+    })
+
+    await window.loadURL("https://loader.live/dashboard/ro-exec")
+    LOADER_COOKIES = (await window.webContents.session.cookies.get({})).map(a => `${a.name}=${a.value}`);
+    await window.close();
 }
 
 const app = electron.app;
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+    createWindow()
+    GetCookies();
+});
 
 const server = new ws.Server({
     port: 42772
 })
 
 server.on('connection', socket => {
-    const vm = new lua.luaVM();
-
-    vm.on('error', (message) => {
-        socket.send(JSON.stringify({
-            op: 'error',
-            data: {message}
-        }))
-    })
-    vm.on('syntax', (message) => {
-        socket.send(JSON.stringify({
-            op: 'syntax',
-            data: {message}
-        }))
-    })
+    APP_SOCKET = socket;
     socket.on('message', async message => {
-        let output;
         const { op, data } = JSON.parse(message);
 
         switch (op) {
@@ -73,6 +80,56 @@ server.on('connection', socket => {
                 window.restore();
                 break
 
+            case 'openDirectory':
+                const dir = await electron.dialog.showOpenDialog(window, { properties: ["openDirectory"] });
+                if (!dir) return;
+
+                let root = dir.filePaths.shift()
+                if (!fs.existsSync(path.join(root, "launch.cfg"))) {
+                    socket.send(JSON.stringify({
+                        op: "error",
+                        data: { message: "Please select a valid krampus installation" }
+                    }))
+                    break
+                }
+
+                let adata = fs.readFileSync(path.join(root, "launch.cfg"), "utf-8").split("|")
+                if (adata.pop() !== "RO-EXEC") {
+                    socket.send(JSON.stringify({
+                        op: "error",
+                        data: { message: "Please select a valid krampus installation" }
+                    }))
+                    break
+                }
+
+                INSTALLATION = root;
+                loaderClient.connect(`wss://loader.live/?login_token=%22${adata.shift()}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES.join("; ") });
+                break
+            case 'inject':
+                if (!INSTALLATION) {
+                    socket.send(JSON.stringify({
+                        op: "error",
+                        data: { message: "Please select a valid krampus installation" }
+                    }))
+                    break
+                }
+                
+                const file = fs.readdirSync(INSTALLATION);
+                file.forEach(file => {
+                    if (!file.endsWith(".exe")) return;
+
+                    execFile(path.join(INSTALLATION, file), function(a, b, stderr) {
+                        if (stderr.includes("EACCES")) {
+                            socket.send(JSON.stringify({
+                                op: "error",
+                                data: { message: "Please run this application as Administrator" }
+                            })) 
+                        } 
+                        console.log(a, b, stderr);
+                    })
+                });
+
+                break
             case 'openFile':
                 const files = await electron.dialog.showOpenDialogSync(window, {properties: ['openFile']});
                 if (!files) return;
@@ -83,50 +140,54 @@ server.on('connection', socket => {
                     data: {value: content}
                 }))
                 break
-
-            case 'grabPremium':
-                output = await psu.grabPremium(vm, data.source);
-
-                socket.send(JSON.stringify({
-                    op: 'setEditor',
-                    data: {value: output}
-                }))
-                break
-
-            case 'constantDump':
-                output = await psu.constantDump(vm, data.source);
-
-                socket.send(JSON.stringify({
-                    op: 'setEditor',
-                    data: {value: output}
-                }))
-                break
-
-            case 'joinDiscord':
-                discord.join('DEzFrPu6pY');
-                break
-
-            case 'buyLuraph':
-                open('https://lura.ph/');
-                break
-
-            case 'beautify':
-                output = await luamin.Beautify(data.source, data.options);
-
-                socket.send(JSON.stringify({
-                    op: 'setEditor',
-                    data: {value: output}
-                }))
-                break
-
-            case 'minify':
-                output = await luamin.Minify(data.source, data.options);
-
-                socket.send(JSON.stringify({
-                    op: 'setEditor',
-                    data: {value: output}
-                }))
+            case 'execute':
+                if (!INJECTED) return
+                LOADER_CONNECTION.send(`<SCRIPT>${data.source}`)
                 break
         }
     })
 })
+
+loaderClient.on("connect", connection => {
+    console.log("Connected to loader.live");
+
+    LOADER_CONNECTION = connection;
+    APP_SOCKET.send(JSON.stringify({
+        op: "connected",
+        data: {}
+    }));
+
+    connection.send(JSON.stringify({
+        type: 1,
+        side_type: "browser"
+    }));
+
+    connection.on("message", (message) => {
+        if (message.type !== "utf8") return;
+
+        const packet = JSON.parse(message.utf8Data);
+        if (packet.status === "connected" && !INJECTED) {
+            INJECTED = true;
+            APP_SOCKET.send(JSON.stringify({
+                op: "injected",
+                data: { value: true }
+            }))
+        }
+
+        if (packet.status === "disconnected" && INJECTED) {
+            INJECTED = false;
+            APP_SOCKET.send(JSON.stringify({
+                op: "injected",
+                data: { value: false }
+            }))
+        }
+    });
+
+    setInterval(() => {
+        connection.send(JSON.stringify({
+            type: 2
+        }));
+    }, 1000);
+});
+
+loaderClient.on("connectFailed", (err) => console.log(err));

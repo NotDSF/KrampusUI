@@ -56,6 +56,12 @@ body, html, #root {
 	margin-left: 5px;
 }
 
+#title-icon {
+	width: 15px;
+	height: 15px;
+	margin-left: 3px;
+}
+
 #navigation-wrapper {
 	text-align: center;
 	width: calc(100% - 33px);
@@ -78,19 +84,19 @@ body, html, #root {
 	height: 30px;
 }
 
-#tools {
+#inject {
 	margin-left: 35px;
 	width: 45px;
 	height: 30px;
 }
 
-#beautify {
+#config {
 	margin-left: 80px;
-	width: 55px;
+	width: 85px;
 	height: 30px;
 }
 
-#file:hover, #tools:hover, #beautify:hover {
+#file:hover, #inject:hover, #config:hover {
 	background-color: #33353C;
 }
 
@@ -126,11 +132,11 @@ body, html, #root {
 	visibility: hidden;
 	background-color: #232428;
 }
-#beautify-tab {
+#config-tab {
 	z-index: 5;
 	position: absolute;
 	width: 250px;
-	height: 51px;
+	height: 25px;
 	left: 110px;
 	top: 30px;
 	visibility: hidden;
