@@ -1,6 +1,6 @@
 # KrampusUI
 shitty psu tools reskin from bork quickly rushed to support loader.live websockets (it works so what)
-> :warning: Inject doesn't work unless you somehow run the node application as admin
+> :warning: Inject doesn't work unless you somehow run the node application as admin (run usual injector)
 
 ## Usage & Installation
 - `npm i`
@@ -9,4 +9,5 @@ shitty psu tools reskin from bork quickly rushed to support loader.live websocke
 ## App setup
 > :warning: This will attempt to replicate a connection to wss://loader.live using your credentials                              
 ![](https://i.imgur.com/UJdxDmo.png)                     
-ur pretty much good after thats complete
+![](https://i.imgur.com/vJNbMCD.png)                     
+**Once you've connected to the servers it'll automatically detect new instances etc and be seemless**
