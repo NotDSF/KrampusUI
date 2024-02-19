@@ -1,12 +1,15 @@
 # KrampusUI
-shitty psu tools reskin from bork quickly rushed to support loader.live websockets (it works so what)
+External UI for the exploit krampus
 
-## Usage & Installation
-- `npm i`
-- `npm start`
+## How does it work?
+Once you've selected your krampus root directory it'll look for your **launch.cfg** file, grab your authentication key and replicate connections to **wss://loader.live**
 
-## App setup
-> :warning: This will attempt to replicate a connection to wss://loader.live using your credentials                              
-![](https://i.imgur.com/UJdxDmo.png)                     
-![](https://i.imgur.com/vJNbMCD.png)                     
-**Once you've connected to the servers it'll automatically detect new instances etc and be seemless**
+## Pre-builds
+[Pre-prelease](https://github.com/NotDSF/KrampusUI/releases/tag/prerelease)
+
+## App setup 
+You'll need to set your krampus root directory, you can do this by navigativing to **Configuration** -> **Choose installation path**
+_(every time you start the app)_
+ 
+![](https://i.imgur.com/DJT5Yem.png)                
+![](https://i.imgur.com/AsHvMNP.png)
