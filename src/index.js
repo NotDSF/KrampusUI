@@ -3,7 +3,6 @@ const express  = require('express');
 const path     = require('path');
 const fs       = require('fs');
 const ws       = require('ws');
-const open     = require('open');
 const { execFile } = require("child_process");
 
 const WebSocketClient = require("websocket").client;
@@ -31,10 +30,11 @@ function createWindow() {
 
     window.loadURL('http://localhost:42773');
     window.setMenu(null);
+    window.setAlwaysOnTop(true, "normal", 1);
 }
 
 async function GetCookies() {
-    window = new electron.BrowserWindow({
+    const cwindow = new electron.BrowserWindow({
         width: 700,
         height: 550,
         frame: false,
@@ -42,9 +42,9 @@ async function GetCookies() {
         minWidth: 500,
     })
 
-    await window.loadURL("https://loader.live/dashboard/ro-exec")
-    LOADER_COOKIES = (await window.webContents.session.cookies.get({})).map(a => `${a.name}=${a.value}`);
-    await window.close();
+    await cwindow.loadURL("https://loader.live/dashboard/ro-exec")
+    LOADER_COOKIES = (await cwindow.webContents.session.cookies.get({})).map(a => `${a.name}=${a.value}`);
+    await cwindow.close();
 }
 
 const app = electron.app;
@@ -80,6 +80,26 @@ server.on('connection', socket => {
                 window.restore();
                 break
 
+            case 'reconnect':
+                if (!INSTALLATION) {
+                    socket.send(JSON.stringify({
+                        op: "error",
+                        data: { message: "Please select a valid RO-EXEC installation" }
+                    }))
+                    break
+                }
+
+                if (LOADER_CONNECTION || INJECTED) {
+                    socket.send(JSON.stringify({
+                        op: "error",
+                        data: { message: "You are already connected to RO-EXEC" }
+                    }))
+                    break
+                }
+
+                loaderClient.connect(`wss://loader.live/?login_token=%22${adata.shift()}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES.join("; ") });
+                break
+
             case 'openDirectory':
                 const dir = await electron.dialog.showOpenDialog(window, { properties: ["openDirectory"] });
                 if (!dir) return;
@@ -88,7 +108,7 @@ server.on('connection', socket => {
                 if (!fs.existsSync(path.join(root, "launch.cfg"))) {
                     socket.send(JSON.stringify({
                         op: "error",
-                        data: { message: "Please select a valid krampus installation" }
+                        data: { message: "Please select a valid RO-EXEC installation" }
                     }))
                     break
                 }
@@ -97,7 +117,7 @@ server.on('connection', socket => {
                 if (adata.pop() !== "RO-EXEC") {
                     socket.send(JSON.stringify({
                         op: "error",
-                        data: { message: "Please select a valid krampus installation" }
+                        data: { message: "Please select a valid RO-EXEC installation" }
                     }))
                     break
                 }
@@ -105,11 +125,12 @@ server.on('connection', socket => {
                 INSTALLATION = root;
                 loaderClient.connect(`wss://loader.live/?login_token=%22${adata.shift()}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES.join("; ") });
                 break
+
             case 'inject':
                 if (!INSTALLATION) {
                     socket.send(JSON.stringify({
                         op: "error",
-                        data: { message: "Please select a valid krampus installation" }
+                        data: { message: "Please select a valid RO-EXEC installation" }
                     }))
                     break
                 }
@@ -118,18 +139,17 @@ server.on('connection', socket => {
                 file.forEach(file => {
                     if (!file.endsWith(".exe")) return;
 
-                    execFile(path.join(INSTALLATION, file), function(a, b, stderr) {
-                        if (stderr.includes("EACCES")) {
+                    execFile(path.join(INSTALLATION, file), function(err) {
+                        if (err && err.code === "EACCES") {
                             socket.send(JSON.stringify({
                                 op: "error",
                                 data: { message: "Please run this application as Administrator" }
                             })) 
                         } 
-                        console.log(a, b, stderr);
                     })
                 });
-
                 break
+
             case 'openFile':
                 const files = await electron.dialog.showOpenDialogSync(window, {properties: ['openFile']});
                 if (!files) return;
@@ -140,6 +160,7 @@ server.on('connection', socket => {
                     data: {value: content}
                 }))
                 break
+                
             case 'execute':
                 if (!INJECTED) return
                 LOADER_CONNECTION.send(`<SCRIPT>${data.source}`)
@@ -190,4 +211,11 @@ loaderClient.on("connect", connection => {
     }, 1000);
 });
 
-loaderClient.on("connectFailed", (err) => console.log(err));
+loaderClient.on("connectFailed", (err) => {
+    console.log(err);
+
+    APP_SOCKET.send(JSON.stringify({
+        op: "connectFailed",
+        data: {}
+    }));
+});

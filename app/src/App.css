@@ -84,14 +84,8 @@ body, html, #root {
 	height: 30px;
 }
 
-#inject {
-	margin-left: 35px;
-	width: 45px;
-	height: 30px;
-}
-
 #config {
-	margin-left: 80px;
+	margin-left: 40px;
 	width: 85px;
 	height: 30px;
 }
@@ -136,8 +130,8 @@ body, html, #root {
 	z-index: 5;
 	position: absolute;
 	width: 250px;
-	height: 25px;
-	left: 110px;
+	height: 51px;
+	left: 70px;
 	top: 30px;
 	visibility: hidden;
 	background-color: #232428;

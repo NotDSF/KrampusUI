@@ -1,6 +1,5 @@
 # KrampusUI
 shitty psu tools reskin from bork quickly rushed to support loader.live websockets (it works so what)
-> :warning: Inject doesn't work unless you somehow run the node application as admin (run usual injector)
 
 ## Usage & Installation
 - `npm i`

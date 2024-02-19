@@ -39,6 +39,9 @@ class App extends React.Component {
 				case 'success':
 					Alert.success(data.message, 5000);
 					break
+				case 'connectFailed':
+					Alert.warning("Failed to connect to RO-EXEC servers", 5000);
+					break
 				case 'connected':
 					Alert.success("Connected to RO-EXEC servers", 5000);
 					CONNECTED = true;
@@ -73,6 +76,7 @@ class App extends React.Component {
 		this.openDirectory   = this.openDirectory.bind(this);
 		this.inject 		 = this.inject.bind(this);
 		this.execute		 = this.execute.bind(this)
+		this.reconnect	     = this.reconnect.bind(this);
 
 		this.state = {
 			maximized: false,
@@ -177,6 +181,12 @@ class App extends React.Component {
 		this.send('openDirectory', {});
 	}
 
+	reconnect() {
+		if (CONNECTED) return Alert.warning("RO-EXEC is already connected")
+		if (INJECTED) return Alert.warning("RO-EXEC is already injected!")
+		this.send('reconnect', {});
+	}
+
 	clearEditor() {
 		this.setState({value: ''});
 		if (this.state.openTab) {
@@ -210,6 +220,9 @@ class App extends React.Component {
 						<button class='tab-entry' onClick={this.openDirectory}>
 							<p class='tab-title'>Choose installation path</p>
 						</button>
+						<button class='tab-entry' onClick={this.reconnect}>
+							<p class='tab-title'>Reconnect to RO-EXEC</p>
+						</button>
 					</div>
 				</div>
 				<div id='title'>
@@ -221,7 +234,6 @@ class App extends React.Component {
 						</div>
 						<div id='navigation-wrapper'>
 							<button id='file' class='button-left' onMouseOver={() => this.onHover('files')} onClick={() => this.openTab('files')}>File</button>
-							<button id='inject' class='button-left' onMouseOver={() => this.onHover('inject')} onClick={() => this.inject()}>Inject</button>
 							<button id='config' class='button-left' onMouseOver={() => this.onHover('config')} onClick={() => this.openTab('config')}>Configuation</button>
 						</div>
 					</div>

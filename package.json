@@ -1,10 +1,11 @@
 {
-  "name": "psu-tools",
+  "name": "roUI",
   "version": "1.0.0",
   "main": "./src/index.js",
   "bin": "./src/index.js",
   "scripts": {
-    "start": "electron ./src/index.js"
+    "start": "electron ./src/index.js",
+    "build": "npx electron-packager ./ --force"
   },
   "keywords": [],
   "author": "",
@@ -13,20 +14,11 @@
   "dependencies": {
     "electron": "^13.1.7",
     "express": "^4.17.1",
-    "lua.vm.js": "^0.0.1",
-    "open": "^8.2.1",
-    "pkg": "^5.3.1",
-    "superagent": "^6.1.0",
     "websocket": "^1.0.34",
     "ws": "^7.5.3"
   },
   "devDependencies": {
+    "@electron/packager": "^18.1.3",
     "webpack-cli": "^5.1.4"
-  },
-  "build": {
-    "files": ["./src/*"],
-    "win": {
-      "requestedExecutionLevel": "requireAdministrator"
-    }
   }
 }
