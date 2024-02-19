@@ -5,7 +5,7 @@
   "bin": "./src/index.js",
   "scripts": {
     "start": "electron ./src/index.js",
-    "build": "npx electron-packager ./ --force"
+    "build": "npx electron-packager ./ --overwrite"
   },
   "keywords": [],
   "author": "",

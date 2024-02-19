@@ -77,6 +77,7 @@ class App extends React.Component {
 		this.inject 		 = this.inject.bind(this);
 		this.execute		 = this.execute.bind(this)
 		this.reconnect	     = this.reconnect.bind(this);
+		this.inject			 = this.inject.bind(this);
 
 		this.state = {
 			maximized: false,
@@ -235,6 +236,7 @@ class App extends React.Component {
 						<div id='navigation-wrapper'>
 							<button id='file' class='button-left' onMouseOver={() => this.onHover('files')} onClick={() => this.openTab('files')}>File</button>
 							<button id='config' class='button-left' onMouseOver={() => this.onHover('config')} onClick={() => this.openTab('config')}>Configuation</button>
+							<button id='inject' class='button-left' onMouseOver={() => this.onHover('inject')} onClick={this.inject}>Inject</button>
 						</div>
 					</div>
 					<div id='title-right'>

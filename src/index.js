@@ -3,7 +3,8 @@ const express  = require('express');
 const path     = require('path');
 const fs       = require('fs');
 const ws       = require('ws');
-const { execFile } = require("child_process");
+const { exec } = require("child_process");
+const { stderr } = require('process');
 
 const WebSocketClient = require("websocket").client;
 const loaderClient = new WebSocketClient();
@@ -37,20 +38,29 @@ async function GetCookies() {
     const cwindow = new electron.BrowserWindow({
         width: 700,
         height: 550,
-        frame: false,
         minHeight: 450,
         minWidth: 500,
+        title: "Login to your loader.live account"
     })
 
-    await cwindow.loadURL("https://loader.live/dashboard/ro-exec")
-    LOADER_COOKIES = (await cwindow.webContents.session.cookies.get({})).map(a => `${a.name}=${a.value}`);
-    await cwindow.close();
+    await cwindow.loadURL("https://loader.live/dashboard/")
+    const id = cwindow.webContents.findInPage("User Analytics");
+    cwindow.webContents.on("found-in-page", async (_, result) => {
+        if (result.requestId !== id || result.matches <= 0) return;
+
+        let cookies = await cwindow.webContents.session.cookies.get({});
+        cookies = cookies.map(a => `${a.name}=${a.value}`);
+
+        console.log(`Set cookies to: ${cookies.join("; ")}`)
+        LOADER_COOKIES = cookies.join("; "); 
+        createWindow();
+        cwindow.close();
+    })
 }
 
 const app = electron.app;
 
 app.whenReady().then(() => {
-    createWindow()
     GetCookies();
 });
 
@@ -97,7 +107,7 @@ server.on('connection', socket => {
                     break
                 }
 
-                loaderClient.connect(`wss://loader.live/?login_token=%22${adata.shift()}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES.join("; ") });
+                loaderClient.connect(`wss://loader.live/?login_token=%22${adata.shift()}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES });
                 break
 
             case 'openDirectory':
@@ -123,7 +133,7 @@ server.on('connection', socket => {
                 }
 
                 INSTALLATION = root;
-                loaderClient.connect(`wss://loader.live/?login_token=%22${adata.shift()}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES.join("; ") });
+                loaderClient.connect(`wss://loader.live/?login_token=%22${adata.shift()}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES });
                 break
 
             case 'inject':
@@ -134,12 +144,20 @@ server.on('connection', socket => {
                     }))
                     break
                 }
+
+                if (INJECTED) {
+                    socket.send(JSON.stringify({
+                        op: "error",
+                        data: { message: "RO-EXEC is already injected" }
+                    }))
+                    break
+                }
                 
                 const file = fs.readdirSync(INSTALLATION);
                 file.forEach(file => {
                     if (!file.endsWith(".exe")) return;
 
-                    execFile(path.join(INSTALLATION, file), function(err) {
+                    exec(`${file}`, { cwd: INSTALLATION }, (err, stdout, stdrr) => {
                         if (err && err.code === "EACCES") {
                             socket.send(JSON.stringify({
                                 op: "error",
@@ -187,6 +205,7 @@ loaderClient.on("connect", connection => {
         if (message.type !== "utf8") return;
 
         const packet = JSON.parse(message.utf8Data);
+        
         if (packet.status === "connected" && !INJECTED) {
             INJECTED = true;
             APP_SOCKET.send(JSON.stringify({
