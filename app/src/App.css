@@ -37,6 +37,7 @@ body, html, #root {
 
 #title-right {
 	float: right;
+	width: 50%;
 }
 
 #title-left {
@@ -116,11 +117,17 @@ body, html, #root {
 	z-index: 5;
 	position: absolute;
 	width: 250px;
-	height: 51px;
+	height: 56px;
 	left: 30px;
 	top: 30px;
 	visibility: hidden;
 	background-color: #232428;
+}
+
+#status {
+	margin-left: 50px;
+	margin-top: 12px;
+	user-select: none;
 }
 
 #tools-tab {
@@ -137,7 +144,7 @@ body, html, #root {
 	z-index: 5;
 	position: absolute;
 	width: 250px;
-	height: 51px;
+	height: 85px;
 	left: 70px;
 	top: 30px;
 	visibility: hidden;

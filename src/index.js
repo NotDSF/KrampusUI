@@ -19,6 +19,7 @@ let INJECTED;
 let LOADER_CONNECTION
 let APP_SOCKET;
 let LOADER_COOKIES;
+let API_KEY;
 
 function createWindow() {
     window = new electron.BrowserWindow({
@@ -89,7 +90,19 @@ server.on('connection', socket => {
             case 'restore':
                 window.restore();
                 break
+            
+            case 'disconnect':
+                if (!LOADER_CONNECTION) {
+                    socket.send(JSON.stringify({
+                        op: "error",
+                        data: { message: "You aren't connected to RO-EXEC servers" }
+                    }))
+                    break
+                } 
 
+                LOADER_CONNECTION.close();
+                LOADER_CONNECTION = undefined;
+                break
             case 'reconnect':
                 if (!INSTALLATION) {
                     socket.send(JSON.stringify({
@@ -107,7 +120,7 @@ server.on('connection', socket => {
                     break
                 }
 
-                loaderClient.connect(`wss://loader.live/?login_token=%22${adata.shift()}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES });
+                loaderClient.connect(`wss://loader.live/?login_token=%22${API_KEY}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES });
                 break
 
             case 'openDirectory':
@@ -133,9 +146,11 @@ server.on('connection', socket => {
                 }
 
                 INSTALLATION = root;
-                loaderClient.connect(`wss://loader.live/?login_token=%22${adata.shift()}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES });
-                break
+                API_KEY = adata.shift();
 
+                loaderClient.connect(`wss://loader.live/?login_token=%22${API_KEY}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES });
+                break
+a
             case 'inject':
                 if (!INSTALLATION) {
                     socket.send(JSON.stringify({
@@ -221,6 +236,14 @@ loaderClient.on("connect", connection => {
                 data: { value: false }
             }))
         }
+    });
+
+    connection.on("close", () => {
+        LOADER_CONNECTION = undefined;
+        APP_SOCKET.send(JSON.stringify({
+            op: "disconnected",
+            data: {}
+        }));
     });
 
     setInterval(() => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import MonacoEditor from 'react-monaco-editor';
-import { Alert } from 'rsuite';
+import { Alert, Badge } from 'rsuite';
 
 import './App.css';
 import 'rsuite/dist/styles/rsuite-dark.css';
@@ -14,6 +14,7 @@ import Execute from "../public/play.png";
 
 let INJECTED = false;
 let CONNECTED = false;
+let status;
 
 class App extends React.Component {
 	constructor(props) {
@@ -40,11 +41,18 @@ class App extends React.Component {
 					Alert.success(data.message, 5000);
 					break
 				case 'connectFailed':
+					status.style.backgroundColor = "#f04f43";
 					Alert.warning("Failed to connect to RO-EXEC servers", 5000);
 					break
 				case 'connected':
 					Alert.success("Connected to RO-EXEC servers", 5000);
+					status.style.backgroundColor = "#89f043";
 					CONNECTED = true;
+					break
+				case 'disconnected':
+					Alert.success("Disconnected from RO-EXEC servers", 5000);
+					status.style.backgroundColor = "#f04f43";
+					CONNECTED = false;
 					break
 				case 'injected':
 					if (data.value && !INJECTED) {
@@ -55,6 +63,7 @@ class App extends React.Component {
 						Alert.warning("RO-EXEC was uninjected", 5000);
 					}
 
+					
 					INJECTED = data.value;
 					break
 			}
@@ -78,12 +87,13 @@ class App extends React.Component {
 		this.execute		 = this.execute.bind(this)
 		this.reconnect	     = this.reconnect.bind(this);
 		this.inject			 = this.inject.bind(this);
+		this.disconnect		 = this.disconnect.bind(this);
 
 		this.state = {
 			maximized: false,
 			refs: {
 				files: React.createRef(),
-				config: React.createRef(),
+				config: React.createRef()
 			},
 			value: `print("Hello World!")`
 		}
@@ -169,6 +179,7 @@ class App extends React.Component {
 			}
 		})
 
+		status = document.getElementById('status');
 		document.addEventListener('mousedown', this.handleClick);
 	}
 
@@ -186,6 +197,11 @@ class App extends React.Component {
 		if (CONNECTED) return Alert.warning("RO-EXEC is already connected")
 		if (INJECTED) return Alert.warning("RO-EXEC is already injected!")
 		this.send('reconnect', {});
+	}
+
+	disconnect() {
+		if (!CONNECTED) return Alert.warning("RO-EXEC is already disconnected!")
+		this.send('disconnect', {});
 	}
 
 	clearEditor() {
@@ -224,11 +240,15 @@ class App extends React.Component {
 						<button class='tab-entry' onClick={this.reconnect}>
 							<p class='tab-title'>Reconnect to RO-EXEC</p>
 						</button>
+						<button class='tab-entry' onClick={this.disconnect}>
+							<p class='tab-title'>Disconnect from RO-EXEC</p>
+						</button>
 					</div>
 				</div>
+				
 				<div id='title'>
 					<p id='title-text'>loader.live</p>
-
+					
 					<div id='title-left'>
 						<div id='icon-wrapper'>
 							<img id='icon' src={Icon} />
@@ -240,6 +260,7 @@ class App extends React.Component {
 						</div>
 					</div>
 					<div id='title-right'>
+						<Badge color='red' id='status'></Badge>
 						<div id='button-wrapper'>
 							<button id='min' onClick={this.execute}><img id ='icon' src={Execute}/></button>
 							<button id='min' onClick={this.minimize}><img id ='min-png' src={minIcon}/></button>
