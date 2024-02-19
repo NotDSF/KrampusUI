@@ -13,3 +13,6 @@ _(every time you start the app)_
  
 ![](https://i.imgur.com/DJT5Yem.png)                
 ![](https://i.imgur.com/AsHvMNP.png)
+
+## Credits
+- Big thanks to ![bork (chris)](https://github.com/Bork0038/) for the UI 
