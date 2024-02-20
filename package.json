@@ -14,6 +14,8 @@
   "dependencies": {
     "electron": "^13.1.7",
     "express": "^4.17.1",
+    "find-process": "^1.4.7",
+    "ps-node": "^0.1.6",
     "websocket": "^1.0.34",
     "ws": "^7.5.3"
   },

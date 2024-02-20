@@ -4,7 +4,8 @@ const path     = require('path');
 const fs       = require('fs');
 const ws       = require('ws');
 const { exec } = require("child_process");
-const { stderr } = require('process');
+const find     = require("find-process");
+const psnode   = require("ps-node");
 
 const WebSocketClient = require("websocket").client;
 const loaderClient = new WebSocketClient();
@@ -20,6 +21,8 @@ let LOADER_CONNECTION
 let APP_SOCKET;
 let LOADER_COOKIES;
 let API_KEY;
+let AUTOINJECT;
+let ROBLOXOPEN;
 
 function createWindow() {
     window = new electron.BrowserWindow({
@@ -92,7 +95,26 @@ server.on('connection', socket => {
             case 'restore':
                 window.restore();
                 break
-            
+
+            case 'autoinject':
+                AUTOINJECT = data.value;
+                break
+
+            case 'closeroblox':
+                let processes = await find("name", "RobloxPlayerBeta.exe", true);
+                if (processes.length <= 0) return;
+
+                psnode.kill(processes.shift().pid, (err) => {
+                    if (err) {
+                        socket.send(JSON.stringify({
+                            op: "error",
+                            data: { message: "Failed to kill RobloxPlayerBeta.exe" }
+                        }))
+                        return;
+                    }
+                })
+                break
+                
             case 'disconnect':
                 if (!LOADER_CONNECTION) {
                     socket.send(JSON.stringify({
@@ -174,7 +196,7 @@ a
                 file.forEach(file => {
                     if (!file.endsWith(".exe")) return;
 
-                    exec(`${file}`, { cwd: INSTALLATION }, (err, stdout, stdrr) => {
+                    exec(`${file}`, { cwd: INSTALLATION }, (err) => {
                         if (err && err.code === "EACCES") {
                             socket.send(JSON.stringify({
                                 op: "error",
@@ -225,6 +247,7 @@ loaderClient.on("connect", connection => {
         
         if (packet.status === "connected" && !INJECTED) {
             INJECTED = true;
+            INJECTING = false;
             APP_SOCKET.send(JSON.stringify({
                 op: "injected",
                 data: { value: true }
@@ -263,3 +286,29 @@ loaderClient.on("connectFailed", (err) => {
         data: {}
     }));
 });
+
+setInterval(async () => {
+    let processes = await find("name", "RobloxPlayerBeta.exe", true);
+    if (processes.length <= 0) {
+        ROBLOXOPEN = false;
+        return;
+    }
+
+    if (INJECTED || !INSTALLATION || !AUTOINJECT || ROBLOXOPEN) return;
+
+    ROBLOXOPEN = true;
+
+    const file = fs.readdirSync(INSTALLATION);
+    file.forEach(file => {
+        if (!file.endsWith(".exe")) return;
+
+        exec(`${file}`, { cwd: INSTALLATION }, (err) => {
+            if (err && err.code === "EACCES") {
+                socket.send(JSON.stringify({
+                    op: "error",
+                    data: { message: "Please run this application as Administrator" }
+                })) 
+            } 
+        })
+    });
+}, 5000);

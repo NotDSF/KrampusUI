@@ -14,6 +14,7 @@ import Execute from "../public/play.png";
 
 let INJECTED = false;
 let CONNECTED = false;
+let AUTOINJECT = false;
 let status;
 
 class App extends React.Component {
@@ -88,6 +89,8 @@ class App extends React.Component {
 		this.reconnect	     = this.reconnect.bind(this);
 		this.inject			 = this.inject.bind(this);
 		this.disconnect		 = this.disconnect.bind(this);
+		this.autoInject		 = this.autoInject.bind(this);
+		this.closeRoblox	 = this.closeRoblox.bind(this);
 
 		this.state = {
 			maximized: false,
@@ -221,6 +224,16 @@ class App extends React.Component {
 		this.send('execute', { source: this.state.value })
 	}
 
+	autoInject() {
+		AUTOINJECT = !AUTOINJECT;
+		document.getElementById("autoinject").style.background = AUTOINJECT ? "#1c1c1e" : "none";
+		this.send('autoinject', { value: AUTOINJECT });
+	}
+
+	closeRoblox() {
+		this.send('closeroblox', {});
+	}
+
 	render() {
 		return (
 			<div id='wrapper'>
@@ -242,6 +255,12 @@ class App extends React.Component {
 						</button>
 						<button class='tab-entry' onClick={this.disconnect}>
 							<p class='tab-title'>Disconnect from RO-EXEC</p>
+						</button>
+						<button class='tab-entry' onClick={this.closeRoblox}>
+							<p class='tab-title'>Close roblox</p>
+						</button>
+						<button class='tab-entry' id="autoinject" onClick={this.autoInject}>
+							<p class='tab-title'>Auto Inject</p>
 						</button>
 					</div>
 				</div>
