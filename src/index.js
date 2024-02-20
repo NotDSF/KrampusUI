@@ -27,7 +27,7 @@ function createWindow() {
         height: 550,
         frame: false,
         minHeight: 450,
-        minWidth: 500,
+        minWidth: 500
     })
 
     window.loadURL('http://localhost:42773');
@@ -44,10 +44,8 @@ async function GetCookies() {
         title: "Login to your loader.live account"
     })
 
-    await cwindow.loadURL("https://loader.live/dashboard/")
-    const id = cwindow.webContents.findInPage("User Analytics");
-    cwindow.webContents.on("found-in-page", async (_, result) => {
-        if (result.requestId !== id || result.matches <= 0) return;
+    cwindow.webContents.on("did-navigate-in-page", async (_, url) => {
+        if (url !== "https://loader.live/dashboard") return;
 
         let cookies = await cwindow.webContents.session.cookies.get({});
         cookies = cookies.map(a => `${a.name}=${a.value}`);
@@ -56,7 +54,11 @@ async function GetCookies() {
         LOADER_COOKIES = cookies.join("; "); 
         createWindow();
         cwindow.close();
+        
+        console.log("ready!")
     })
+
+    await cwindow.loadURL("https://loader.live/");
 }
 
 const app = electron.app;
