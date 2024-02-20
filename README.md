@@ -11,7 +11,7 @@ External UI for the exploit krampus
 Once you've selected your krampus root directory it'll look for your **launch.cfg** file, grab your authentication key and replicate connections to **wss://loader.live**
 
 ## Pre-builds
-[Pre-prelease](https://github.com/NotDSF/KrampusUI/releases/tag/prerelease)
+[Beta](https://github.com/NotDSF/KrampusUI/releases/tag/beta)
 
 ## App setup 
 > :warning: You will need to login to **loader.live** on your first launch          
