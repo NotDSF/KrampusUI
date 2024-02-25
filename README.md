@@ -14,13 +14,15 @@ Once you've selected your krampus root directory it'll look for your **launch.cf
 [Beta](https://github.com/NotDSF/KrampusUI/releases/tag/beta)
 
 ## App setup 
-> :warning: You will need to login to **loader.live** on your first launch          
+Upon launching the app you will be greeted with a **loader.live** login screen, you will need to login to continue.        
+_(This will grab your login token to use in **wss://loader.live** authentication)_
 
+## Auto Inject
 You'll need to set your krampus root directory, you can do this by navigativing to **Configuration** -> **Choose installation path**
 _(every time you start the app)_
  
 ![](https://i.imgur.com/DJT5Yem.png)                
-![](https://i.imgur.com/AsHvMNP.png)
+
 
 ## Credits
 - Big thanks to ![bork (chris)](https://github.com/Bork0038/) for the UI 

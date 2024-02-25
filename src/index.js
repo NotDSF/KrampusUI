@@ -3,9 +3,8 @@ const express  = require('express');
 const path     = require('path');
 const fs       = require('fs');
 const ws       = require('ws');
-const { exec } = require("child_process");
 const find     = require("find-process");
-const psnode   = require("ps-node");
+const { exec } = require("child_process");
 
 const WebSocketClient = require("websocket").client;
 const loaderClient = new WebSocketClient();
@@ -15,14 +14,11 @@ http.use(express.static(path.join(__dirname, 'dist')));
 http.listen(42773);
 
 let window;
-let INSTALLATION;
 let INJECTED;
 let LOADER_CONNECTION
 let APP_SOCKET;
 let LOADER_COOKIES;
 let API_KEY;
-let AUTOINJECT;
-let ROBLOXOPEN;
 
 function createWindow() {
     window = new electron.BrowserWindow({
@@ -39,6 +35,7 @@ function createWindow() {
 }
 
 async function GetCookies() {
+    let CDATA;
     const cwindow = new electron.BrowserWindow({
         width: 700,
         height: 550,
@@ -55,13 +52,33 @@ async function GetCookies() {
 
         console.log(`Set cookies to: ${cookies.join("; ")}`)
         LOADER_COOKIES = cookies.join("; "); 
-        createWindow();
-        cwindow.close();
         
-        console.log("ready!")
-    })
+        CDATA = electron.clipboard.readText("clipboard");
+        electron.clipboard.writeText("", "clipboard");
+        await cwindow.webContents.executeJavaScript("document.getElementsByClassName('btn flex justify-center items-center px-1')[0].click()")
 
-    await cwindow.loadURL("https://loader.live/");
+        let id;
+        id = setInterval(async () => {
+            let newc = electron.clipboard.readText("clipboard");
+            if (newc == CDATA) {
+                await cwindow.webContents.executeJavaScript("document.getElementsByClassName('btn flex justify-center items-center px-1')[0].click()")
+                return;
+            }
+
+            API_KEY = newc;
+
+            clearInterval(id);
+            createWindow();
+            cwindow.close();
+            electron.clipboard.writeText(CDATA, "clipboard");
+            console.log(`API Key: ${API_KEY}`);
+        }, 1000);
+    });
+
+    await cwindow.loadURL("https://loader.live/", {
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0",
+        extraHeaders: "pragma: no-cache\n"
+    });
 }
 
 const app = electron.app;
@@ -76,6 +93,8 @@ const server = new ws.Server({
 
 server.on('connection', socket => {
     APP_SOCKET = socket;
+    loaderClient.connect(`wss://loader.live/?login_token=%22${API_KEY}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES });
+
     socket.on('message', async message => {
         const { op, data } = JSON.parse(message);
 
@@ -104,8 +123,8 @@ server.on('connection', socket => {
                 let processes = await find("name", "RobloxPlayerBeta.exe", true);
                 if (processes.length <= 0) return;
 
-                psnode.kill(processes.shift().pid, (err) => {
-                    if (err) {
+                exec("taskkill /IM RobloxPlayerBeta.exe /F", (error) => {
+                    if (error) {
                         socket.send(JSON.stringify({
                             op: "error",
                             data: { message: "Failed to kill RobloxPlayerBeta.exe" }
@@ -128,15 +147,7 @@ server.on('connection', socket => {
                 LOADER_CONNECTION = undefined;
                 break
             case 'reconnect':
-                if (!INSTALLATION) {
-                    socket.send(JSON.stringify({
-                        op: "error",
-                        data: { message: "Please select a valid RO-EXEC installation" }
-                    }))
-                    break
-                }
-
-                if (LOADER_CONNECTION || INJECTED) {
+                if (LOADER_CONNECTION) {
                     socket.send(JSON.stringify({
                         op: "error",
                         data: { message: "You are already connected to RO-EXEC" }
@@ -145,66 +156,6 @@ server.on('connection', socket => {
                 }
 
                 loaderClient.connect(`wss://loader.live/?login_token=%22${API_KEY}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES });
-                break
-
-            case 'openDirectory':
-                const dir = await electron.dialog.showOpenDialog(window, { properties: ["openDirectory"] });
-                if (!dir) return;
-
-                let root = dir.filePaths.shift()
-                if (!fs.existsSync(path.join(root, "launch.cfg"))) {
-                    socket.send(JSON.stringify({
-                        op: "error",
-                        data: { message: "Please select a valid RO-EXEC installation" }
-                    }))
-                    break
-                }
-
-                let adata = fs.readFileSync(path.join(root, "launch.cfg"), "utf-8").split("|")
-                if (adata.pop() !== "RO-EXEC") {
-                    socket.send(JSON.stringify({
-                        op: "error",
-                        data: { message: "Please select a valid RO-EXEC installation" }
-                    }))
-                    break
-                }
-
-                INSTALLATION = root;
-                API_KEY = adata.shift();
-
-                loaderClient.connect(`wss://loader.live/?login_token=%22${API_KEY}%22`, "echo-protocol", "https://loader.live/", { cookie: LOADER_COOKIES });
-                break
-a
-            case 'inject':
-                if (!INSTALLATION) {
-                    socket.send(JSON.stringify({
-                        op: "error",
-                        data: { message: "Please select a valid RO-EXEC installation" }
-                    }))
-                    break
-                }
-
-                if (INJECTED) {
-                    socket.send(JSON.stringify({
-                        op: "error",
-                        data: { message: "RO-EXEC is already injected" }
-                    }))
-                    break
-                }
-                
-                const file = fs.readdirSync(INSTALLATION);
-                file.forEach(file => {
-                    if (!file.endsWith(".exe")) return;
-
-                    exec(`${file}`, { cwd: INSTALLATION }, (err) => {
-                        if (err && err.code === "EACCES") {
-                            socket.send(JSON.stringify({
-                                op: "error",
-                                data: { message: "Please run this application as Administrator" }
-                            })) 
-                        } 
-                    })
-                });
                 break
 
             case 'openFile':
@@ -286,29 +237,3 @@ loaderClient.on("connectFailed", (err) => {
         data: {}
     }));
 });
-
-setInterval(async () => {
-    let processes = await find("name", "RobloxPlayerBeta.exe", true);
-    if (processes.length <= 0) {
-        ROBLOXOPEN = false;
-        return;
-    }
-
-    if (INJECTED || !INSTALLATION || !AUTOINJECT || ROBLOXOPEN) return;
-
-    ROBLOXOPEN = true;
-
-    const file = fs.readdirSync(INSTALLATION);
-    file.forEach(file => {
-        if (!file.endsWith(".exe")) return;
-
-        exec(`${file}`, { cwd: INSTALLATION }, (err) => {
-            if (err && err.code === "EACCES") {
-                socket.send(JSON.stringify({
-                    op: "error",
-                    data: { message: "Please run this application as Administrator" }
-                })) 
-            } 
-        })
-    });
-}, 5000);

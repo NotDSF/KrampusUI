@@ -101,5 +101,4 @@ typings/
 # TernJS port file
 .tern-port
 
-roUI-win32-x64/
-roUI-win32-x64.rar
+*.rar

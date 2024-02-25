@@ -84,12 +84,9 @@ class App extends React.Component {
 		this.close           = this.close.bind(this);
 		this.send            = this.send.bind(this);
 		this.openDirectory   = this.openDirectory.bind(this);
-		this.inject 		 = this.inject.bind(this);
 		this.execute		 = this.execute.bind(this)
 		this.reconnect	     = this.reconnect.bind(this);
-		this.inject			 = this.inject.bind(this);
 		this.disconnect		 = this.disconnect.bind(this);
-		this.autoInject		 = this.autoInject.bind(this);
 		this.closeRoblox	 = this.closeRoblox.bind(this);
 
 		this.state = {
@@ -191,14 +188,12 @@ class App extends React.Component {
 	}
 
 	openDirectory() {
-		if (CONNECTED) return Alert.warning("RO-EXEC already configured");
 		if (INJECTED) return Alert.warning("RO-EXEC is already injected!");
 		this.send('openDirectory', {});
 	}
 
 	reconnect() {
 		if (CONNECTED) return Alert.warning("RO-EXEC is already connected")
-		if (INJECTED) return Alert.warning("RO-EXEC is already injected!")
 		this.send('reconnect', {});
 	}
 
@@ -213,21 +208,10 @@ class App extends React.Component {
 			this.openTab(null);
 		}
 	}
-
-	inject() {
-		if (INJECTED) return Alert.warning("RO-EXEC is already injected!");
-		this.send('inject', {})
-	}
 	
 	execute() {
 		if (!INJECTED) return Alert.error("You need to inject RO-EXEC!");
 		this.send('execute', { source: this.state.value })
-	}
-
-	autoInject() {
-		AUTOINJECT = !AUTOINJECT;
-		document.getElementById("autoinject").style.background = AUTOINJECT ? "#1c1c1e" : "none";
-		this.send('autoinject', { value: AUTOINJECT });
 	}
 
 	closeRoblox() {
@@ -247,9 +231,6 @@ class App extends React.Component {
 						</button>
 					</div>
 					<div id='config-tab' ref={this.state.refs.config}>
-						<button class='tab-entry' onClick={this.openDirectory}>
-							<p class='tab-title'>Choose installation path</p>
-						</button>
 						<button class='tab-entry' onClick={this.reconnect}>
 							<p class='tab-title'>Reconnect to RO-EXEC</p>
 						</button>
@@ -258,9 +239,6 @@ class App extends React.Component {
 						</button>
 						<button class='tab-entry' onClick={this.closeRoblox}>
 							<p class='tab-title'>Close roblox</p>
-						</button>
-						<button class='tab-entry' id="autoinject" onClick={this.autoInject}>
-							<p class='tab-title'>Auto Inject</p>
 						</button>
 					</div>
 				</div>
@@ -275,7 +253,6 @@ class App extends React.Component {
 						<div id='navigation-wrapper'>
 							<button id='file' class='button-left' onMouseOver={() => this.onHover('files')} onClick={() => this.openTab('files')}>File</button>
 							<button id='config' class='button-left' onMouseOver={() => this.onHover('config')} onClick={() => this.openTab('config')}>Configuation</button>
-							<button id='inject' class='button-left' onMouseOver={() => this.onHover('inject')} onClick={this.inject}>Inject</button>
 						</div>
 					</div>
 					<div id='title-right'>
